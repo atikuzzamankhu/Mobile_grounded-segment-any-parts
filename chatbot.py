@@ -32,8 +32,10 @@ from langchain.chains.conversation.memory import ConversationBufferMemory
 from langchain.llms.openai import OpenAI
 
 import detectron2.data.transforms as T
-from segment_anything.utils.amg import remove_small_regions
-from segment_anything import build_sam, sam_model_registry, SamAutomaticMaskGenerator, SamPredictor
+# from segment_anything.utils.amg import remove_small_regions
+# from segment_anything import build_sam, sam_model_registry, SamAutomaticMaskGenerator, SamPredictor
+from mobile_sam.utils.amg import remove_small_regions
+from mobile_sam import sam_model_registry, SamPredictor, SamAutomaticMaskGenerator,build_sam
 from demo_vlpart_sam import show_predictions_with_masks
 from demo_glip_sam import show_predictions_with_masks as show_predictions_with_masks_glip
 from vlpart.vlpart import build_vlpart
@@ -1038,8 +1040,8 @@ class SegmentAnything:
     def __init__(self, device):
         print(f"Initializing SegmentAnything to {device}")
 
-        sam_checkpoint = "sam_vit_h_4b8939.pth"
-        model_type = "vit_h"
+        sam_checkpoint = "mobile_sam.pt"
+        model_type = "vit_t"
         self.sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
         self.sam.to(device=device)
     
@@ -1084,11 +1086,16 @@ class PartPromptSegmentAnything:
         print(f"Initializing PartPromptSegmentAnything to {device}")
         self.device = device
 
-        sam_checkpoint = "sam_vit_h_4b8939.pth"
+        sam_checkpoint = "vit_t"
         vlpart_checkpoint = "swinbase_part_0a0000.pth"
         # initialize SAM
-        self.sam = build_sam(checkpoint=sam_checkpoint)
+        # self.sam = build_sam(checkpoint=sam_checkpoint)
+        # self.sam.to(device=device)
+        model_type = "vit_t"
+        self.sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
         self.sam.to(device=device)
+        self.sam.eval()
+        self.sam = SamPredictor(self.sam)
 
         # initialize VLPart
         self.vlpart = build_vlpart(checkpoint=vlpart_checkpoint)

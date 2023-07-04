@@ -19,13 +19,16 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 # Diffusion init using diffusers.
 
 from vlpart.vlpart import build_vlpart
-from segment_anything import build_sam, SamPredictor
-from segment_anything.utils.amg import remove_small_regions
+# from segment_anything import build_sam, SamPredictor
+# from segment_anything.utils.amg import remove_small_regions
+from mobile_sam import sam_model_registry, SamPredictor
+from mobile_sam.utils.amg import remove_small_regions
 import detectron2.data.transforms as T
 
 # diffusers==0.14.0 required.
 from diffusers import ControlNetModel, UniPCMultistepScheduler
-from segment_anything import sam_model_registry, SamAutomaticMaskGenerator
+# from segment_anything import sam_model_registry, SamAutomaticMaskGenerator
+from mobile_sam import sam_model_registry, SamPredictor, SamAutomaticMaskGenerator
 
 base_model_path = "stabilityai/stable-diffusion-2-inpainting"
 controlnet_path = "shgao/edit-anything-v0-1-1"
@@ -42,16 +45,21 @@ pipe.enable_xformers_memory_efficient_attention()
 # pipe.enable_model_cpu_offload() # disable for now because of unknow bug in accelerate
 pipe.to(device)
 
-sam_checkpoint = "sam_vit_h_4b8939.pth"
+sam_checkpoint = "mobile_sam.pt"
 vlpart_checkpoint = "swinbase_part_0a0000.pth"
 # vlpart_checkpoint = "swinbase_cascade_pascalpart.pth"
-model_type = "default"
+model_type = "vit_t"
 sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
 sam.to(device=device)
 mask_generator = SamAutomaticMaskGenerator(sam)
 vlpart = build_vlpart(checkpoint=vlpart_checkpoint)
 vlpart.to(device=device)
 sam_predictor = SamPredictor(build_sam(checkpoint=sam_checkpoint).to(device=device))
+model_type = "vit_t"
+sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
+sam.to(device=device)
+sam.eval()
+sam_predictor = SamPredictor(sam)
 
 def get_blip2_text(image):
     inputs = processor(image, return_tensors="pt").to(device, torch.float16)

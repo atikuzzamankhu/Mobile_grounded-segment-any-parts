@@ -11,9 +11,10 @@ import cv2
 import matplotlib.pyplot as plt
 import detectron2.data.transforms as T
 from vlpart.vlpart import build_vlpart
-from segment_anything import build_sam, SamPredictor
-from segment_anything.utils.amg import remove_small_regions
-
+# from segment_anything import build_sam, SamPredictor
+# from segment_anything.utils.amg import remove_small_regions
+from mobile_sam import sam_model_registry, SamPredictor
+from mobile_sam.utils.amg import remove_small_regions
 
 def show_predictions_with_masks(scores, boxes, classes, masks, text_prompt):
     num_obj = len(scores)
@@ -53,7 +54,7 @@ if __name__ == "__main__":
         "--vlpart_checkpoint", type=str, default="swinbase_part_0a0000.pth", help="path to checkpoint file"
     )
     parser.add_argument(
-        "--sam_checkpoint", type=str, default="sam_vit_h_4b8939.pth", help="path to checkpoint file"
+        "--sam_checkpoint", type=str, default="mobile_sam.pt", help="path to checkpoint file"
     )
     parser.add_argument("--input_image", type=str, required=True, help="path to image file")
     parser.add_argument("--text_prompt", type=str, required=True, help="text prompt")
@@ -83,7 +84,13 @@ if __name__ == "__main__":
     vlpart.to(device=device)
 
     # initialize SAM
-    sam_predictor = SamPredictor(build_sam(checkpoint=sam_checkpoint).to(device=device))
+    model_type = "vit_t"
+    sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
+    sam.to(device=device)
+    sam.eval()
+    sam_predictor = SamPredictor(sam)
+
+    # sam_predictor = SamPredictor(build_sam(checkpoint=sam_checkpoint).to(device=device))
 
     # load image
     image = cv2.imread(image_path)

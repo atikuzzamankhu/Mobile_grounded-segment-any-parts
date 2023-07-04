@@ -12,7 +12,9 @@ import matplotlib.pyplot as plt
 
 from maskrcnn_benchmark.config import cfg
 from glip.predictor_glip import GLIPDemo
-from segment_anything import build_sam, SamPredictor
+# from segment_anything import build_sam, SamPredictor
+from mobile_sam import sam_model_registry, SamPredictor
+from mobile_sam.utils.amg import remove_small_regions
 
 
 def show_predictions_with_masks(scores, boxes, classes, masks):
@@ -53,7 +55,7 @@ if __name__ == "__main__":
         "--glip_config_file", type=str, default="glip/configs/glip_Swin_L.yaml", help="path to configuration file"
     )
     parser.add_argument(
-        "--sam_checkpoint", type=str, default="sam_vit_h_4b8939.pth", help="path to checkpoint file"
+        "--sam_checkpoint", type=str, default="mobile_sam.pt", help="path to checkpoint file"
     )
     parser.add_argument("--input_image", type=str, required=True, help="path to image file")
     parser.add_argument("--text_prompt", type=str, required=True, help="text prompt")
@@ -95,7 +97,12 @@ if __name__ == "__main__":
     )
 
     # initialize SAM
-    sam_predictor = SamPredictor(build_sam(checkpoint=sam_checkpoint).to(device=device))
+    # sam_predictor = SamPredictor(build_sam(checkpoint=sam_checkpoint).to(device=device))
+    model_type = "vit_t"
+    sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
+    sam.to(device=device)
+    sam.eval()
+    sam_predictor = SamPredictor(sam)
 
     # load image
     image = cv2.imread(image_path)
