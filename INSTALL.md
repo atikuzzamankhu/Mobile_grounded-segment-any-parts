@@ -14,8 +14,8 @@ conda install pytorch==1.12.1 torchvision==0.13.1 cudatoolkit=11.6 -c pytorch -c
 pip install -r requirements.txt
 
 
-# 3. Install sam
-cd segment-anything; pip install -e .; cd ..
+# 3. Install Mobile SAM
+pip install git+https://github.com/ChaoningZhang/MobileSAM.git
 
 # 4. Install glip
 cd glip; pip install -e .; cd ..
