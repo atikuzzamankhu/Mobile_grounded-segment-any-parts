@@ -1,4 +1,6 @@
 
+This repository is a fork of the [original Grounded Segment Anything: From Objects to Parts]([https://github.com/amine0110/SAM-Medical-Imaging](https://github.com/Cheems-Seminar/grounded-segment-any-parts) In this repository we only Integrate with the [MobileSAM](https://github.com/ChaoningZhang/MobileSAM)
+
 <p align="center" width="100%">
 <a href="https://github.com/Cheems-Seminar/grounded-segment-any-parts" target="_blank"><img src="assets/logo.png" alt="Cheems Seminar" style="width: 70%; min-width: 300px; display: block; margin: auto;"></a>
 </p>
